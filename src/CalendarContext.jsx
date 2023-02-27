@@ -1,6 +1,12 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
 
-import dateformat, { getDateArray, getMonthArray, getYearArray, getLunar } from "./util";
+import dateformat, {
+  getDateArray,
+  getMonthArray,
+  getYearArray,
+  getLunar,
+  isSameDateTime,
+} from "./util";
 
 const CalendarContext = createContext();
 
@@ -87,6 +93,10 @@ function getInitialData() {
       nowTimeClock: dateformat(nowDateTime, "t hh:MM:ss"),
       nowChYMD: dateformat(nowDateTime, "yyyy年mm月dd日"),
       nowLunarDate: getLunar(nowDateTime).monthCn + getLunar(nowDateTime).dayCn,
+      selectedChDLunar: (d1, d2) =>
+        `${dateformat(d2, isSameDateTime(d1, d2) ? "今天" : "ddd d")} ${
+          getLunar(d2).monthCn + getLunar(d2).dayCn
+        }`,
       selectedChYM: dateformat(nowDateTime, "yyyy年mm月"),
       selectedChY: dateformat(nowDateTime, "yyyy年"),
       selectedYearsRange: `${rangeStartYear} - ${rangeStartYear + 9}`,

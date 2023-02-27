@@ -2,6 +2,7 @@ import { CalendarProvider, useCalendar } from "./CalendarContext";
 
 import TimeClock from "./component/TimeClock";
 import Calendar from "./component/Calendar";
+import ToDoList from "./component/ToDoList";
 
 function App() {
   const value = useCalendar();
@@ -11,6 +12,7 @@ function App() {
         <CalendarProvider value={{ ...value }}>
           <TimeClock />
           <Calendar />
+          <ToDoList />
         </CalendarProvider>
       </div>
     </div>
