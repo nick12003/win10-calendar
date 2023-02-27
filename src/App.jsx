@@ -1,34 +1,22 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import { CalendarProvider, useCalendar } from "./CalendarContext";
+
+import TimeClock from "./component/TimeClock";
+import Calendar from "./component/Calendar";
+import ToDoList from "./component/ToDoList";
 
 function App() {
-  const [count, setCount] = useState(0)
-
+  const value = useCalendar();
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className='h-screen w-screen flex items-center justify-center'>
+      <div className='bg-primary min-w-[380px] max-w-[380px] text-secondary'>
+        <CalendarProvider value={{ ...value }}>
+          <TimeClock />
+          <Calendar />
+          <ToDoList />
+        </CalendarProvider>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
