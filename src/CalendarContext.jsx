@@ -1,6 +1,6 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
 
-import dateformat, { getDateArray, getLunar } from "./util";
+import dateformat, { getDateArray, getMonthArray, getYearArray, getLunar } from "./util";
 
 const CalendarContext = createContext();
 
@@ -14,10 +14,13 @@ export default function useCalendarContext() {
 }
 
 const CalendarReducer = (state, action) => {
-  const { type, payload } = action;
+  const {
+    type,
+    payload,
+    payload: { newDateTime, newMonth, newYear, newRangeStartYear },
+  } = action;
   switch (type) {
     case "SET_NOW_TIME":
-      const { newDateTime } = payload;
       return {
         ...state,
         nowDateTime: newDateTime,
@@ -28,10 +31,11 @@ const CalendarReducer = (state, action) => {
           nowLunarDate: getLunar(newDateTime).monthCn + getLunar(newDateTime).dayCn,
         },
       };
+    case "SET_MODE":
+      return { ...state, mode: payload.newMode };
     case "SET_SELECTED_DATE":
       return { ...state, selectedDate: payload.newDate };
     case "SET_SELECTED_MONTH":
-      const { newMonth } = payload;
       return {
         ...state,
         selectedMonth: newMonth,
@@ -41,6 +45,26 @@ const CalendarReducer = (state, action) => {
           selectedChYM: dateformat(newMonth, "yyyy年mm月"),
         },
       };
+    case "SET_SELECTED_YEAR":
+      return {
+        ...state,
+        selectedYear: newYear,
+        monthArray: getMonthArray(newYear),
+        text: {
+          ...state.text,
+          selectedChY: dateformat(newYear, "yyyy年"),
+        },
+      };
+    case "SET_RANGE_START_YEAR":
+      return {
+        ...state,
+        rangeStartYear: newRangeStartYear,
+        yearArray: getYearArray(state.nowDateTime, newRangeStartYear),
+        text: {
+          ...state.text,
+          selectedYearsRange: `${newRangeStartYear} - ${newRangeStartYear + 9}`,
+        },
+      };
     default:
       return state;
   }
@@ -48,17 +72,24 @@ const CalendarReducer = (state, action) => {
 
 function getInitialData() {
   const nowDateTime = new Date();
+  const rangeStartYear = Math.floor(nowDateTime.getFullYear() / 10) * 10;
   return {
     nowDateTime,
     mode: "date",
     selectedDate: nowDateTime,
     selectedMonth: nowDateTime,
+    selectedYear: nowDateTime,
+    rangeStartYear,
     dateArray: getDateArray(nowDateTime),
+    monthArray: getMonthArray(nowDateTime),
+    yearArray: getYearArray(nowDateTime, rangeStartYear),
     text: {
       nowTimeClock: dateformat(nowDateTime, "t hh:MM:ss"),
       nowChYMD: dateformat(nowDateTime, "yyyy年mm月dd日"),
       nowLunarDate: getLunar(nowDateTime).monthCn + getLunar(nowDateTime).dayCn,
       selectedChYM: dateformat(nowDateTime, "yyyy年mm月"),
+      selectedChY: dateformat(nowDateTime, "yyyy年"),
+      selectedYearsRange: `${rangeStartYear} - ${rangeStartYear + 9}`,
     },
   };
 }
@@ -70,6 +101,13 @@ export function useCalendar() {
     dispatch({
       type: "SET_NOW_TIME",
       payload: { newDateTime },
+    });
+  };
+
+  const setMode = (newMode) => {
+    dispatch({
+      type: "SET_MODE",
+      payload: { newMode },
     });
   };
 
@@ -87,6 +125,20 @@ export function useCalendar() {
     });
   };
 
+  const setSelectedYear = (newYear) => {
+    dispatch({
+      type: "SET_SELECTED_YEAR",
+      payload: { newYear },
+    });
+  };
+
+  const setRangeStartYear = (newRangeStartYear) => {
+    dispatch({
+      type: "SET_RANGE_START_YEAR",
+      payload: { newRangeStartYear },
+    });
+  };
+
   useEffect(() => {
     setTimeout(() => {
       setNowDateTime(new Date());
@@ -95,7 +147,10 @@ export function useCalendar() {
 
   return {
     ...state,
+    setMode,
     setSelectedDate,
     setSelectedMonth,
+    setSelectedYear,
+    setRangeStartYear,
   };
 }

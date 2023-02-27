@@ -70,7 +70,10 @@ export const dateAdd = (datePart, number, date) => {
  *
  * 月曆上一共會顯示42個日期，包含上個月、當月以及下個月
  *
- * 例如選擇 2023/02/，則會顯示`2023/01`部分尾段日期(29-31)`2023/02`所有日期(1-28)以及`2023/03`的部分前段日期(1-11)
+ * 例如選擇 2023/02/，則會顯示
+ * - `2023/01`部分尾段日期(29-31)
+ * - `2023/02`所有日期(1-28)
+ * - `2023/03`的部分前段日期(1-11)
  *
  * @param {Date} selectedMonth month
  * @returns {Array} date object array
@@ -102,6 +105,104 @@ export const getDateArray = (selectedMonth) => {
     ...Array(nextMonDays)
       .fill()
       .map((_, i) => transform(new Date(currentYear, currentMonth + 1, i + 1))),
+  ];
+};
+
+/**
+ * 取得選擇年份在年曆上顯示的月份陣列
+ *
+ * 年曆上一共會顯示16個月份，包含當月以及下個月
+ *
+ * 例如選擇 2023，則會顯示
+ * - `2023`所有月份(1-2)
+ * - `2024`部分前段月份(1-4)
+ *
+ * @param {Date} selectedYear year
+ * @returns {Array} month object array
+ *
+ */
+export const getMonthArray = (selectedYear) => [
+  ...Array(12)
+    .fill()
+    .map((_, i) => new Date(selectedYear.getFullYear(), i, 1)),
+  ...Array(4)
+    .fill()
+    .map((_, i) => new Date(selectedYear.getFullYear() + 1, i, 1)),
+];
+
+/**
+ * 判斷`nextRange`是否為合法年份
+ *
+ * 最大範圍為當年正負一百年
+ *
+ * @param {number} nowYear 當前年份
+ * @param {number} nextRange 檢核年份
+ * @param {number} preRange 前一個合法年份
+ * @returns {number} a valid year
+ */
+export const validateYear = (nowYear, nextRange, preRange) => {
+  if (nextRange < nowYear - 100) {
+    return nowYear - 100;
+  }
+  if (nextRange + 9 > nowYear + 100) {
+    return nextRange - 10;
+  }
+  if (preRange === nowYear - 100) {
+    return preRange + (10 - (preRange % 10) || 10);
+  }
+  return nextRange;
+};
+
+/**
+ * 取得選擇年份範圍在畫面上顯示的年份陣列以
+ *
+ * 畫面上一共會顯示16個年份，10年為一個區間，包含前個範圍、當前範圍以及下個範圍
+ *
+ * 例如選擇 2020-2029，則會顯示
+ * - `2010-2019`部分尾段年份(2019)
+ * - `2020-2029`所有年份(2020-2029)
+ * - `2030-2039`部分前段年份(2030-2034)
+ *
+ * @param {Date} nowDateTime now date
+ * @param {number} rangeStartYear range start year. ex. 2020-2029 => 2020
+ * @returns {Array} year object array
+ *
+ */
+export const getYearArray = (nowDateTime, rangeStartYear) => {
+  const maxNum = nowDateTime.getFullYear() + 100;
+  const minNum = nowDateTime.getFullYear() - 100;
+  const headRange = (10 - (minNum % 10)) % 10;
+  const tailRange = ((maxNum % 10) + 1) % 10;
+  const First = headRange + minNum;
+  const last = maxNum - tailRange;
+
+  let count = 10;
+  let year = Math.floor(rangeStartYear / 10) * 10;
+  let head = (year - headRange) % 4;
+  let tail = 16 - head - count;
+  let range = 10;
+
+  if (rangeStartYear < First) {
+    head = 0;
+    count = headRange;
+    tail = 16 - count;
+    year = minNum;
+    range = headRange;
+  }
+  if (rangeStartYear + 9 === last) {
+    tail = tailRange;
+  }
+
+  return [
+    ...Array(head)
+      .fill()
+      .map((_, i) => year + i - head),
+    ...Array(count)
+      .fill()
+      .map((_, i) => year + i),
+    ...Array(tail)
+      .fill()
+      .map((_, i) => year + range + i),
   ];
 };
 
